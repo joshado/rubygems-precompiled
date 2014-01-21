@@ -34,7 +34,7 @@ class Gem::Commands::PrecompileCommand < Gem::Command
     gemfiles.each do |gemfile|
       compiler = Gem::Precompiler.new(gemfile, options)
       if compiler.has_extension?
-        $stderr.write "Compiling '#{compiler.gem_name}'... "; $stderr.flush
+        $stderr.puts "Compiling '#{compiler.gem_name}'... "
         compiler.compile
         $stderr.puts "done."
       else

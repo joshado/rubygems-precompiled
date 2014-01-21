@@ -17,7 +17,7 @@ Feature: Pre-compiling gems
   Scenario: Pre-compiling a single compiled gem
     When I run the command "gem precompile compiled-gem.gem"
 
-    Then I should see "Compiling 'compiled-gem'... done."
+    Then I should see "Compiling 'compiled-gem'..."
     And the command should return a success status code
 
   Scenario: Pre-compiling multiple gems

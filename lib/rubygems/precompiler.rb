@@ -4,6 +4,7 @@ require "rubygems/installer"
 require "fileutils"
 require 'rubygems/package/tar_writer'
 require 'zlib'
+require 'pathname'
 
 class Gem::Precompiler
   include FileUtils

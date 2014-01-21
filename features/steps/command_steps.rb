@@ -3,15 +3,11 @@ require 'fileutils'
 require 'tempfile'
 
 Given /^I use the gem configuration option$/ do |string|
-  @gemopti
   File.open(File.expand_path("~/.gemrc"), "a") do |gemconfig|
     gemconfig.puts("# --PURGE FROM HERE ---")
     gemconfig.write string
   end
 
-  # @gemrc = Tempfile.new('gemrc')
-  # @gemrc.write string
-  # @gemrc.close
 end
 After do
   original, _ = File.read(File.expand_path("~/.gemrc")).split("# --PURGE FROM HERE ---")
