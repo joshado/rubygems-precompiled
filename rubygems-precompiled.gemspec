@@ -7,10 +7,10 @@ Gem::Specification.new do |spec|
   spec.name          = "rubygems-precompiled"
   spec.version       = Rubygems::Precompiled::VERSION
   spec.authors       = ["Thomas Haggett"]
-  spec.email         = ["thomas@haggett.org"]
+  spec.email         = ["thomas-rubygemplugin@haggett.org"]
   spec.description   = %q{RubyGems plugin to allow a gem's compiled extension to be pre-built and cached}
   spec.summary       = spec.description
-  spec.homepage      = ""
+  spec.homepage      = "https://github.com/joshado/rubygems-precompiled"
   spec.license       = "MIT"
 
   spec.files         = `git ls-files`.split($/)
