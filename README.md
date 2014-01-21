@@ -1,29 +1,42 @@
 # Rubygems::Precompiled
 
-TODO: Write a gem description
+This gem allows you to build the c-extensions of a ruby-gem on a host with build-tools installed, make the result available over HTTP, then use this on end machines that may not have build-tools installed.
 
 ## Installation
-
-Add this line to your application's Gemfile:
-
-    gem 'rubygems-precompiled'
-
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
 
     $ gem install rubygems-precompiled
 
 ## Usage
 
-TODO: Write usage instructions here
+There are two halves to this, the pre-compile on a build machine and the install
+on machines that don't have the build-tools available.
 
-## Contributing
+### Build host
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Add some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+Fetch a gem you're interested in:
+
+    gem fetch foobar -v '0.1.0'
+
+Pre-compile the gem into the correct folder structure:
+
+    gem precompile -a -o /output foobar-0.1.0.gem
+
+Which will write the file:
+
+    /output/ruby-1.9.3p448/x86_64-linux/foobar-0.1.0.tar.gz
+
+You need to make this directory structure available over HTTP, and available to the installation machines.
+
+### Installation host
+
+Configure the cache path (file:/// and http:// urls are supported at the moment) in `/etc/gemrc`:
+
+    precompiled_cache:
+     - http://some.server/ruby-gem-extensions/
+
+Install a gem using the cache:
+
+    gem install foobar -v '0.1.0'
+
+
+
