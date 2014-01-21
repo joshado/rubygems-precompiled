@@ -4,9 +4,9 @@ require 'rubygems/ext/builder'
 require 'rubygems/package/tar_reader'
 require 'zlib'
 require 'fileutils'
-# require 'net/http'
+require 'net/http'
 require 'uri'
-# require 'tempfile'
+require 'tempfile'
 
 class Gem::Installer
 
@@ -40,11 +40,27 @@ class Gem::Installer
   end
 
   class HttpCache < BaseCache
+    def uri_to_spec(spec)
+      URI.join(@root_uri, File.join(@root_uri.path, cache_key(spec)))
+    end
     def contains?(spec)
-      false
+      uri = uri_to_spec(spec)
+      http = Net::HTTP.start(uri.host, uri.port)
+      http.head(uri.path).code == "200"
     end
     def retrieve(spec)
-      super(spec)
+      tempfile = Tempfile.new('cache-hit')
+      uri = uri_to_spec(spec)
+      http = Net::HTTP.start(uri.host, uri.port)
+      http.request_get(uri.path) do |resp|
+        resp.read_body do |segment|
+          tempfile.write(segment)
+        end
+        tempfile.close
+      end
+
+      yield tempfile
+      tempfile.delete
     end
   end
 
@@ -81,7 +97,6 @@ class Gem::Installer
 
   # Private: Extracts a .tar.gz file on-top of the gem's installation directory
   def overlay_tarball(tarball)
-    puts tarball
     Zlib::GzipReader.open(tarball) do |gzip_io|
       Gem::Package::TarReader.new(gzip_io) do |tar|
         tar.each do |entry|
@@ -99,47 +114,5 @@ class Gem::Installer
       end
     end
   end
-
-#     unless @spec.extensions.empty?
-#       cache_key = "/#{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}/#{Gem::Platform.local.to_s}/#{@spec.name}-#{@spec.version}.tgz"
-#       local_copy = consult_build_artifact_cache(cache_key)
-#       if local_copy
-#         puts "Skipping build with cache"
-
-#         puts "Extracting to #{gem_dir}"
-
-#         end
-#       else
-
-#       end
-#     end
-
-
-#   def prebuild_cache_root
-#     ENV['PREBUILD_CACHE_ROOT']
-#   end
-
-#   # Look in the build-artifact cache for a bundle.
-#   #
-#   # If one exists, download it and return the path as a string
-#   # If not, return nil
-#   def consult_build_artifact_cache(cache_key)
-#     return if prebuild_cache_root.nil?
-
-#     uri = URI.parse("#{prebuild_cache_root}#{cache_key}")
-#     puts "Trying #{uri}"
-#     if uri.scheme == 'http'
-#       response = Net::HTTP.get_response(uri)
-#       if response.code == '200'
-#         file = Tempfile.new('downloaded-file')
-#         file.write response.body
-#         file.path
-#       else
-#         nil
-#       end
-#     elsif uri.scheme == 'file'
-#       File.exist?(uri.path) ? uri.path : nil
-#     end
-#   end
 
 end
