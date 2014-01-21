@@ -1,8 +1,8 @@
 require "rubygems/command"
 
-class Gem::Commands::PrebuildCommand < Gem::Command
+class Gem::Commands::PrecompileCommand < Gem::Command
   def initialize
-    super "compile", "Create a bundle containing the compiled artifacts for this platform", :output => Dir.pwd, :arch => false
+    super "precompile", "Create a bundle containing the compiled artifacts for this platform", :output => Dir.pwd, :arch => false
 
     add_option('-o PATH', '--output=PATH', 'The output directory for the generated bundle. Defaults to the current directory') do |path,options|
       options[:output] = path
@@ -26,15 +26,20 @@ class Gem::Commands::PrebuildCommand < Gem::Command
 
     # no gem, no binary
     if gemfiles.empty?
-      raise Gem::CommandLineError,
-            "Please specify a gem file on the command line (e.g. #{program_name} foo-0.1.0.gem)"
+      raise Gem::CommandLineError, "Please specify a gem file on the command line, e.g. #{program_name} foo-0.1.0.gem"
     end
 
-    require "rubygems/prebuilder"
+    require "rubygems/precompiler"
 
     gemfiles.each do |gemfile|
-      compiler = Gem::Prebuilder.new(gemfile, options)
-      compiler.compile
+      compiler = Gem::Precompiler.new(gemfile, options)
+      if compiler.has_extension?
+        $stderr.write "Compiling '#{compiler.gem_name}'... "; $stderr.flush
+        compiler.compile
+        $stderr.puts "done."
+      else
+        $stderr.puts "The gem '#{compiler.gem_name}' doesn't contain a compiled extension"
+      end
     end
   end
 end
