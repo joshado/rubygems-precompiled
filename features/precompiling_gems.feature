@@ -24,7 +24,8 @@ Feature: Pre-compiling gems
     When I run the command "gem precompile *.gem"
 
     Then I should see "The gem 'simple-gem' doesn't contain a compiled extension"
-    And I should see "Compiling 'compiled-gem'... done."
+    And I should see "Compiling 'compiled-gem'..."
+    And I should see "done."
     And the command should return a success status code
 
   Scenario: Creating the flat output files
