@@ -90,9 +90,11 @@ module Precompiled
     if cache
       $stderr.puts "Loading native extension from cache"
       cache.retrieve(@spec) do |path|
-        puts  @spec.extension_dir
-        overlay_tarball(path, @gem_dir)
-
+        if @spec.respond_to?(:extension_dir)
+          overlay_tarball(path, @spec.extension_dir)
+        else
+          overlay_tarball(path, @gem_dir)
+        end
       end
     else
       build_extensions_without_cache
@@ -120,4 +122,5 @@ module Precompiled
   end
 
 end
-Gem::Ext::Builder.include(Precompiled)
+
+Gem::Installer.send(:include, Precompiled)
