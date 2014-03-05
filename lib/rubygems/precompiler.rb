@@ -9,12 +9,6 @@ require 'pathname'
 class Gem::Precompiler
   include FileUtils
 
-  # Build token history:
-  #  no token      = Rubygems < 2.2.2, so an overlay over the gem directory
-  #  rubygems2.2.2 = Rubygems ~> 2.2.2, so we've compressed the /extensions/ directory.
-  #
-  BUILD_TOKEN = 'rubygems2.2.2'
-
   def initialize(gemfile, opts = {})
     @installer = Gem::Installer.new(gemfile, opts.dup.merge(:unpack => true))
     @spec = @installer.spec
