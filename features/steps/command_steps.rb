@@ -17,7 +17,8 @@ After do
 end
 
 def execute(command)
-    @last_stderr, @last_stdout = "", ""
+  $stderr.puts "Executing '#{command}'"
+  @last_stderr, @last_stdout = "", ""
 
   stderr_r, stderr_w, stdout_r, stdout_w = [IO.pipe, IO.pipe].flatten
   @command_env ||= {}
@@ -30,13 +31,18 @@ def execute(command)
   @last_status = status.exitstatus
   @last_stderr += stderr_r.read until stderr_r.eof?
   @last_stdout += stdout_r.read until stdout_r.eof?
+
+  puts @last_stderr
 end
 
-When /^I (?:run the command|execute) "(.*?)"$/ do |command|
+When /^I (?:run the command|execute) "(.*?)"( ignoring the exit code)?$/ do |command,ignore_exit_code|
   execute(command)
+  raise RuntimeError, "Command '#{command}' exited with non-zero exit status" unless ignore_exit_code or @last_status == 0
+
 end
 When /^I (?:run the command|execute)$/ do |command|
     execute(command)
+    raise RuntimeError, "Command '#{command}' exited with non-zero exit status" unless @last_status == 0
 end
 
 Then /^I should( not)? see "(.*?)"( on (stdout|stderr))?$/ do |invert, expect, any, channel|

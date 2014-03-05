@@ -8,7 +8,12 @@ require 'net/http'
 require 'uri'
 require 'tempfile'
 
-class Gem::Installer
+module Precompiled
+
+  def self.included(base)
+    base.send(:alias_method, :build_extensions_without_cache, :build_extensions)
+    base.send(:alias_method, :build_extensions, :build_extensions_with_cache)
+  end
 
   class BaseCache
     def initialize(root_uri)
@@ -69,7 +74,7 @@ class Gem::Installer
     'http' => HttpCache
   }.freeze
 
-  # Private: A list of precompiled cache root URLs loaded from the rubyges configuration file
+  # Private: A list of precompiled cache root URLs loaded from the rubygems configuration file
   #
   # Returns Array of BaseCache subclasses
   def self.precompiled_caches
@@ -80,27 +85,28 @@ class Gem::Installer
   end
 
   def build_extensions_with_cache
-    cache = Gem::Installer.precompiled_caches.find { |cache| cache.contains?(@spec) }
+    cache = Precompiled.precompiled_caches.find { |cache| cache.contains?(@spec) }
 
     if cache
-      puts "Loading native extension from cache"
+      $stderr.puts "Loading native extension from cache"
       cache.retrieve(@spec) do |path|
-        overlay_tarball(path)
+        if @spec.respond_to?(:extension_dir)
+          overlay_tarball(path, @spec.extension_dir)
+        else
+          overlay_tarball(path, @gem_dir)
+        end
       end
     else
       build_extensions_without_cache
     end
   end
 
-  alias_method :build_extensions_without_cache, :build_extensions
-  alias_method :build_extensions, :build_extensions_with_cache
-
   # Private: Extracts a .tar.gz file on-top of the gem's installation directory
-  def overlay_tarball(tarball)
+  def overlay_tarball(tarball, target_root)
     Zlib::GzipReader.open(tarball) do |gzip_io|
       Gem::Package::TarReader.new(gzip_io) do |tar|
         tar.each do |entry|
-          target_path = File.join(gem_dir, entry.full_name)
+          target_path = File.join(target_root, entry.full_name)
           if entry.directory?
             FileUtils.mkdir_p(target_path)
           elsif entry.file?
@@ -111,8 +117,10 @@ class Gem::Installer
           end
           entry.close
         end
-      end
+       end
     end
   end
 
 end
+
+Gem::Installer.send(:include, Precompiled)

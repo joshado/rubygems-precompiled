@@ -11,23 +11,45 @@ class Gem::Precompiler
 
   def initialize(gemfile, opts = {})
     @installer = Gem::Installer.new(gemfile, opts.dup.merge(:unpack => true))
+    @spec = @installer.spec
+
     @target_dir = opts.fetch(:output, Dir.pwd)
     @target_dir = File.join(@target_dir, arch_string) if opts.fetch(:arch, false)
     @options = opts
   end
 
-  # Public: Returns the name of hte gem
+  # Private: Extracts the gem files into the specified path
+  #
+  def extract_files_into(dir)
+    @installer.unpack(dir)
+  end
+
+  # Public: Returns the name of the gem
   #
   # Returns a string
   def gem_name
-    @installer.spec.name
+    @spec.name
+  end
+
+  # Public: Returns the version string of the gem
+  #
+  # Returns a Gem::Version
+  def gem_version
+    @spec.version
+  end
+
+  # Public: Returns the relative require-paths specified by the gem
+  #
+  # Returns an array of strings
+  def gem_require_paths
+    @spec.require_paths
   end
 
   # Public: Does the gem actually have any compiled extensions?
   #
   # Returns boolean - true if the gem has a c-extension that needs building
   def has_extension?
-    !@installer.spec.extensions.empty?
+    !@spec.extensions.empty?
   end
 
   # Private: Yield the path to a temporary directory that will get deleted when
@@ -51,31 +73,49 @@ class Gem::Precompiler
   #
   # Returns a string
   def output_path
-    File.join(*[@target_dir, "#{@installer.spec.name}-#{@installer.spec.version}.tar.gz"].compact)
+    File.join(*[@target_dir, "#{gem_name}-#{gem_version.to_s}.tar.gz"].compact)
   end
 
-  # Private: Return a list fo build-products in a given directory
+  # Private: Calls the code necessary to build all the extensions
+  # into a specified install root
   #
-  # Returns an array of paths
-  def build_products(installer, path)
-    dlext = RbConfig::CONFIG["DLEXT"]
-    lib_dirs = installer.spec.require_paths.join(',')
-    Dir.glob("#{path}/{#{lib_dirs}}/**/*.#{dlext}")
+  # Returns a list of files beneath that root making up the build
+  # products of the extensions
+  #
+  def build_extensions(install_root)
+    if @spec.respond_to?(:extension_dir=)
+      tempdir do |workroot|
+        extract_files_into(workroot)
+
+        @spec.extension_dir = install_root
+        @spec.installed_by_version = Gem::VERSION
+        @spec.build_extensions
+        Dir.glob(File.join(install_root, "**", "*"))
+      end
+    else
+      extract_files_into(install_root)
+      @installer.build_extensions
+
+      dlext = RbConfig::CONFIG["DLEXT"]
+      lib_dirs = gem_require_paths.join(',')
+      Dir.glob("#{install_root}/{#{lib_dirs}}/**/*.#{dlext}")
+    end
   end
+
 
   # Public: Compile
   #
+  # This compiles into a temporary file, then moves into place. Otherwise we potentially confuse
+  # the gem installer with partial files!
   #
   def compile
-    FileUtils.mkdir_p(@target_dir)
-
+    temp_output = Tempfile.new('partial-output')
     tempdir do |path|
-      @installer.unpack(path)
-      @installer.build_extensions
 
-      targz_file(output_path) do |tar_writer|
+      targz_file(temp_output) do |tar_writer|
 
-        build_products(@installer, path).each do |product_path|
+        build_extensions(path).each do |product_path|
+          next if File.directory?(product_path)
           product_path = Pathname.new(product_path)
           relative_path = product_path.relative_path_from(Pathname.new(path))
 
@@ -94,6 +134,9 @@ class Gem::Precompiler
 
       end
     end
+
+    FileUtils.mkdir_p(@target_dir)
+    FileUtils.mv(temp_output.path, output_path)
   end
 
   # Private: Yield a reference to a TarWriter that writes to
