@@ -4,7 +4,7 @@ Feature: Pre-compiling gems
     Given I have changed to a temporary directory containing "spec/fixtures/*.gem"
 
   Scenario: Input validation
-    When I run the command "gem precompile"
+    When I run the command "gem precompile" ignoring the exit code
     Then I should see "Please specify a gem file on the command line, e.g. gem precompile foo-0.1.0.gem"
     And the command should not return a success status code
 

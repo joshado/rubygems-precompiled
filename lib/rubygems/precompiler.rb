@@ -9,10 +9,14 @@ require 'pathname'
 class Gem::Precompiler
   include FileUtils
 
+  # Build token history:
+  #  no token      = Rubygems < 2.2.2, so an overlay over the gem directory
+  #  rubygems2.2.2 = Rubygems ~> 2.2.2, so we've compressed the /extensions/ directory.
+  #
+  BUILD_TOKEN = 'rubygems2.2.2'
+
   def initialize(gemfile, opts = {})
     @package = Gem::Package.new(gemfile)
-
-    # @installer = Gem::Installer.new(gemfile, opts.dup.merge(:unpack => true))
     @target_dir = opts.fetch(:output, Dir.pwd)
     @target_dir = File.join(@target_dir, arch_string) if opts.fetch(:arch, false)
     @options = opts
@@ -106,13 +110,13 @@ class Gem::Precompiler
 
   # Public: Compile
   #
-  #
+  # This compiles into a temporary file, then moves into place. Otherwise we potentially confuse
+  # the gem installer with partial files!
   def compile
-    FileUtils.mkdir_p(@target_dir)
-
+    temp_output = Tempfile.new('partial-output')
     tempdir do |path|
 
-      targz_file(output_path) do |tar_writer|
+      targz_file(temp_output) do |tar_writer|
 
         build_extensions(path).each do |product_path|
           next if File.directory?(product_path)
@@ -134,6 +138,9 @@ class Gem::Precompiler
 
       end
     end
+
+    FileUtils.mkdir_p(@target_dir)
+    FileUtils.mv(temp_output.path, output_path)
   end
 
   # Private: Yield a reference to a TarWriter that writes to
