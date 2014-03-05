@@ -45,4 +45,5 @@ There are a couple of simple cucumber specs that exercise the plugin via the cur
     bundle
     bundle exec cucumber
 
+When doing this, ensure you don't have either the simple_gem or compiled_gem installed locally, as this will inevitably confused rubygems.
 
