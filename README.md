@@ -38,5 +38,11 @@ Install a gem using the cache:
 
     gem install foobar -v '0.1.0'
 
+### Running the tests
+
+There are a couple of simple cucumber specs that exercise the plugin via the current version of rubygems. You can run them via:
+
+    bundle
+    bundle exec cucumber
 
 
