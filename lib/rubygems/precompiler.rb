@@ -87,6 +87,16 @@ class Gem::Precompiler
       tempdir do |workroot|
         extract_files_into(workroot)
 
+        # HACK HACK HACK!!!
+        # i feel sad writing this but can't see a simpler way ?
+        class <<@spec
+          attr_accessor :workroot
+          def full_gem_path
+            return workroot
+          end
+        end
+        @spec.workroot = workroot
+
         @spec.extension_dir = install_root
         @spec.installed_by_version = Gem::VERSION
         @spec.build_extensions
