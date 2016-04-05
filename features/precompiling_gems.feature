@@ -20,6 +20,14 @@ Feature: Pre-compiling gems
     Then I should see "Compiling 'compiled-gem'..."
     And the command should return a success status code
 
+  Scenario: Pre-compiling a single compiled gem with the --noclean options
+    When I run the command "gem precompile --noclean compiled-gem.gem"
+
+    Then I should see "Leaving"
+    And the command should leave behind temporary directories
+    And the command should return a success status code
+
+
   Scenario: Pre-compiling multiple gems
     When I run the command "gem precompile *.gem"
 

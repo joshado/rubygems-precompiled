@@ -61,6 +61,15 @@ Then /^I should( not)? see "(.*?)"( on (stdout|stderr))?$/ do |invert, expect, a
   end
 end
 
+Then /^the command should leave behind temporary directories/ do
+  data = @last_stdout + @last_stderr
+  data.each_line do |l|
+    if m = l.match(/Leaving (.*) in place/)
+      expect(Dir.exists?(m[1])).to be_true
+    end
+  end
+end
+
 Then /^the command should( not)? return a success status code$/ do |invert|
   if invert
     @last_status.should_not == 0
