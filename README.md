@@ -47,3 +47,7 @@ There are a couple of simple cucumber specs that exercise the plugin via the cur
 
 When doing this, ensure you don't have either the simple_gem or compiled_gem installed locally, as this will inevitably confuse poor rubygems.
 
+#### Fixture gems
+The sources to build the gems used in the test are included in the gem-sources.tar.gz file in the fixtures directory. If you need to change these you will have to extract
+the file modify the sources and re-create the .tar.gz archive, as well as putting the new gems in place in the fixtures directory.
+
