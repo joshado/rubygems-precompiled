@@ -23,6 +23,7 @@ Feature: Installing using a compiled-cache
 
     Then I should see "Hello, world!"
 
+  # this works in reality but the test is dodgy on ruby 2. Needs investment in time to fix
   Scenario: Installing a compiled gem with a cache hit
     Given I use the gem configuration option
       """
