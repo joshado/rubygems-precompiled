@@ -27,6 +27,11 @@ Feature: Pre-compiling gems
     And the command should leave behind temporary directories
     And the command should return a success status code
 
+  Scenario: Pre-compiling a single compiled gem with --build-config
+    When I run the command "gem precompile --verbose --build-config='--foo --bar' compiled-gem.gem"
+
+    Then I should see "build-args --foo --bar"
+    And the command should return a success status code
 
   Scenario: Pre-compiling multiple gems
     When I run the command "gem precompile *.gem"

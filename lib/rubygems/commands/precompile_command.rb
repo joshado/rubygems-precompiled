@@ -1,4 +1,5 @@
 require "rubygems/command"
+require "shellwords"
 
 class Gem::Commands::PrecompileCommand < Gem::Command
   def initialize
