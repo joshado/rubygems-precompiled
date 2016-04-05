@@ -17,7 +17,7 @@ class Gem::Commands::PrecompileCommand < Gem::Command
     end
 
     add_option('-b','--build-config=CONFIG','commands to pass to the build i.e the run of extconf.rb') do |config, options|
-      options[:build_config] = config.split(' ')
+      options[:build_config] = Shellwords.split(config)
     end
   end
 
