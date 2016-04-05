@@ -23,14 +23,14 @@ class Gem::Precompiler
     # build configuration. We use the write_build_info_file method which should work on ruby 2+
     # on ruby  < 1.9.3 we don't support setting of build options. 1.9.3 is EOL.
     # However most simple gems that do not require build time config will still work.
-    if !opts.fetch(:build_config,[]).empty?
-      if Gem::Installer.method_defined?(:write_build_info_file)
-        @installer.write_build_info_file
-      else
-        puts("Older version or rubygems, rubygems-precompiled does not support build options on this rubygems release (pull req welcome)")
-        puts("Try again without build configuration")
-        exit(1)
-      end
+    return if opts.fetch(:build_config,[]).empty?
+
+    if Gem::Installer.method_defined?(:write_build_info_file)
+      @installer.write_build_info_file
+    else
+      puts("Older version of rubygems, rubygems-precompiled does not support build options on this rubygems release (pull req welcome)")
+      puts("Try again without build configuration")
+      exit(1)
     end
   end
 
