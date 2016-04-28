@@ -1,4 +1,5 @@
 require "rubygems/command"
+require "shellwords"
 
 class Gem::Commands::PrecompileCommand < Gem::Command
   def initialize
@@ -10,6 +11,14 @@ class Gem::Commands::PrecompileCommand < Gem::Command
 
     add_option('-a','--arch-dirs','Adds the architecture sub-folders to the output directory before writing') do |arch, options|
       options[:arch] = true
+    end
+
+    add_option('-n','--noclean','do not clean up tempdirs, leaves temp dirs in place etc for inspection and debugging') do |noclean, options|
+      options[:debug] = true
+    end
+
+    add_option('-b','--build-config=CONFIG','commands to pass to the build i.e the run of extconf.rb') do |config, options|
+      options[:build_config] = Shellwords.split(config)
     end
   end
 

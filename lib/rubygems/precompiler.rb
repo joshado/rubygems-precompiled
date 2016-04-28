@@ -6,16 +6,32 @@ require 'rubygems/package/tar_writer'
 require 'zlib'
 require 'pathname'
 
+
 class Gem::Precompiler
   include FileUtils
 
   def initialize(gemfile, opts = {})
-    @installer = Gem::Installer.new(gemfile, opts.dup.merge(:unpack => true))
+    @installer = Gem::Installer.new(gemfile, opts.dup.merge(:unpack => true, :build_args => opts.fetch(:build_config,[])))
     @spec = @installer.spec
 
     @target_dir = opts.fetch(:output, Dir.pwd)
     @target_dir = File.join(@target_dir, arch_string) if opts.fetch(:arch, false)
+    @debug = opts.fetch(:debug, false)
     @options = opts
+
+    # This writes out a build_info file that the extension builder will process to set the
+    # build configuration. We use the write_build_info_file method which should work on ruby 2+
+    # on ruby  < 1.9.3 we don't support setting of build options. 1.9.3 is EOL.
+    # However most simple gems that do not require build time config will still work.
+    return if opts.fetch(:build_config,[]).empty?
+
+    if Gem::Installer.method_defined?(:write_build_info_file)
+      @installer.write_build_info_file
+    else
+      puts("Older version of rubygems, rubygems-precompiled does not support build options on this rubygems release (pull req welcome)")
+      puts("Try again without build configuration")
+      exit(1)
+    end
   end
 
   # Private: Extracts the gem files into the specified path
@@ -53,13 +69,17 @@ class Gem::Precompiler
   end
 
   # Private: Yield the path to a temporary directory that will get deleted when
-  # the block returns
+  # the block returns, unless debug option was used on the cli
   #
   def tempdir
     temp_dir = Dir.mktmpdir
     yield temp_dir
   ensure
-    rm_rf temp_dir
+    if @debug
+      puts("\nLeaving #{temp_dir} in place")
+    else
+      rm_rf temp_dir
+    end
   end
 
   # Private: Return a string that uniquely keys this machines ruby version and architecture
@@ -87,8 +107,10 @@ class Gem::Precompiler
       tempdir do |workroot|
         extract_files_into(workroot)
 
-        # HACK HACK HACK!!!
-        # i feel sad writing this but can't see a simpler way ?
+        # override the full_gem_path function so we can return
+        # the directory we want. Otherwise by default the build process will
+        # look for the gem installed in the usual place won't find it and will then
+        # bail
         class <<@spec
           attr_accessor :workroot
           def full_gem_path
