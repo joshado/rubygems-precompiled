@@ -85,13 +85,14 @@ module Precompiled
   end
 
   def build_extensions_with_cache
-    cache = Precompiled.precompiled_caches.find { |cache| cache.contains?(@spec) }
+    spec = @package.spec
+    cache = Precompiled.precompiled_caches.find { |cache| cache.contains?(spec) }
 
     if cache
       $stderr.puts "Loading native extension from cache"
-      cache.retrieve(@spec) do |path|
-        if @spec.respond_to?(:extension_dir)
-          overlay_tarball(path, @spec.extension_dir)
+      cache.retrieve(spec) do |path|
+        if spec.respond_to?(:extension_dir)
+          overlay_tarball(path, spec.extension_dir)
         else
           overlay_tarball(path, @gem_dir)
         end
