@@ -35,14 +35,25 @@ def execute(command)
   puts @last_stderr
 end
 
-When /^I (?:run the command|execute) "(.*?)"( ignoring the exit code)?$/ do |command,ignore_exit_code|
+When /^I (?:run ruby)$/ do |command|
+  extension_path = "/tmp/precompiled-workroot/installroot/extensions/#{Gem::Platform.local}/" \
+    "#{RbConfig::CONFIG["ruby_version"]}-static/compiled-gem-0.0.1"
+
+  cmd = %{cat <<RUBY | ruby -I "#{extension_path}"
+#{command}
+RUBY}
+  execute(cmd)
+  raise RuntimeError, "Command '#{command}' exited with non-zero exit status" unless @last_status == 0
+end
+
+When /^I (?:run the command|execute) "(.*?)"( ignoring the exit code)?$/ do |command, ignore_exit_code|
   execute(command)
   raise RuntimeError, "Command '#{command}' exited with non-zero exit status" unless ignore_exit_code or @last_status == 0
-
 end
+
 When /^I (?:run the command|execute)$/ do |command|
-    execute(command)
-    raise RuntimeError, "Command '#{command}' exited with non-zero exit status" unless @last_status == 0
+  execute(command)
+  raise RuntimeError, "Command '#{command}' exited with non-zero exit status" unless @last_status == 0
 end
 
 Then /^I should( not)? see "(.*?)"( on (stdout|stderr))?$/ do |invert, expect, any, channel|

@@ -14,9 +14,10 @@ Feature: Installing using a compiled-cache
     Then I should see "Building native extensions"
     Then I should not see "Loading native extension from cache"
 
-    When I execute
+    When I run ruby
       """
-      echo "puts CompiledClass.new.test_method" | ruby -I "/tmp/precompiled-workroot/installroot/extensions/x86_64-darwin-15/2.1.0-static/compiled-gem-0.0.1" -r "test_ext/test_ext"
+      require "test_ext/test_ext"
+      puts CompiledClass.new.test_method
       """
 
     Then I should see "Hello, world!"
@@ -35,9 +36,10 @@ Feature: Installing using a compiled-cache
     Then I should not see "Building native extensions"
     Then I should see "Loading native extension from cache"
 
-    When I execute
+    When I run ruby
       """
-      echo "puts CompiledClass.new.test_method" | ruby -I "/tmp/precompiled-workroot/installroot/extensions/x86_64-darwin-15/2.1.0-static/compiled-gem-0.0.1" -r "test_ext/test_ext"
+      require "test_ext/test_ext"
+      puts CompiledClass.new.test_method
       """
 
     Then I should see "Hello, world!"
