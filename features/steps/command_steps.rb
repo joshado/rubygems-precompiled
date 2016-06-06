@@ -76,7 +76,7 @@ Then /^the command should leave behind temporary directories/ do
   data = @last_stdout + @last_stderr
   data.each_line do |l|
     if m = l.match(/Leaving (.*) in place/)
-      expect(Dir.exists?(m[1])).to be_true
+      expect(Dir.exists?(m[1])).to be true
     end
   end
 end

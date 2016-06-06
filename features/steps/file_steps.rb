@@ -26,7 +26,7 @@ After do
 end
 
 Then /^the folder "(.*?)" should exist$/ do |folder|
-  File.directory?(folder).should be_true
+  expect(File.directory?(folder)).to be true
 end
 
 Then /^the file "(.*?)" should (not )?exist$/ do |file, invert|
