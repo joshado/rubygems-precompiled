@@ -21,6 +21,7 @@ Given /^I have changed to a temporary directory(?: containing "(.*?)")?$/ do |gl
   FileUtils.chdir(directory)
 end
 After do
+  FileUtils.chdir(OriginalWorkingDirectory)
   cleanup.each { |dir| FileUtils.rm_rf(dir) }
 end
 
