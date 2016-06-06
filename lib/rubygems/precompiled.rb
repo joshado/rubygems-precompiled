@@ -1,4 +1,7 @@
 require 'rubygems/precompiled/version'
+require "rubygems/precompiled/file_cache"
+require "rubygems/precompiled/http_cache"
+
 require 'rubygems/installer'
 require 'rubygems/ext/builder'
 require 'rubygems/package/tar_reader'
@@ -9,69 +12,9 @@ require 'uri'
 require 'tempfile'
 
 module Precompiled
-
   def self.included(base)
     base.send(:alias_method, :build_extensions_without_cache, :build_extensions)
     base.send(:alias_method, :build_extensions, :build_extensions_with_cache)
-  end
-
-  class BaseCache
-    def initialize(root_uri)
-      @root_uri = root_uri
-    end
-
-    def retrieve(spec)
-      raise "Must be overriden!"
-    end
-
-    def contains?(spec)
-      false
-    end
-
-    def cache_key(spec)
-      "/ruby-#{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}/#{Gem::Platform.local.to_s}/#{spec.name}-#{spec.version}.tar.gz"
-    end
-  end
-
-  class FileCache < BaseCache
-    def path_for(spec)
-      File.join(@root_uri.path, cache_key(spec))
-    end
-
-    def contains?(spec)
-      File.exists?(path_for(spec))
-    end
-
-    def retrieve(spec)
-      yield path_for(spec)
-    end
-  end
-
-  class HttpCache < BaseCache
-    def uri_to_spec(spec)
-      URI.join(@root_uri, File.join(@root_uri.path, cache_key(spec)))
-    end
-
-    def contains?(spec)
-      uri = uri_to_spec(spec)
-      http = Net::HTTP.start(uri.host, uri.port)
-      http.head(uri.path).code == "200"
-    end
-
-    def retrieve(spec)
-      tempfile = Tempfile.new('cache-hit')
-      uri = uri_to_spec(spec)
-      http = Net::HTTP.start(uri.host, uri.port)
-      http.request_get(uri.path) do |resp|
-        resp.read_body do |segment|
-          tempfile.write(segment)
-        end
-        tempfile.close
-      end
-
-      yield tempfile
-      tempfile.delete
-    end
   end
 
   GemCache = {
