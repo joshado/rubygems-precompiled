@@ -3,8 +3,6 @@ Feature: Installing using a compiled-cache
   Background:
     Given I have wiped the folder "/tmp/precompiled-workroot"
 
-#  Scenario: Installing a compiled gem without the cache
-
   Scenario: Installing a compiled gem with a cache miss
     Given I use the gem configuration option
       """
@@ -18,12 +16,11 @@ Feature: Installing using a compiled-cache
 
     When I execute
       """
-      echo "puts CompiledClass.new.test_method" | ruby -I/tmp/precompiled-workroot/installroot/gems/compiled-gem-0.0.1/lib -rtest_ext/test_ext
+      echo "puts CompiledClass.new.test_method" | ruby -I "/tmp/precompiled-workroot/installroot/extensions/x86_64-darwin-15/2.1.0-static/compiled-gem-0.0.1" -r "test_ext/test_ext"
       """
 
     Then I should see "Hello, world!"
 
-  # this works in reality but the test is dodgy on ruby 2. Needs investment in time to fix
   Scenario: Installing a compiled gem with a cache hit
     Given I use the gem configuration option
       """
@@ -40,7 +37,7 @@ Feature: Installing using a compiled-cache
 
     When I execute
       """
-      echo "puts CompiledClass.new.test_method" | ruby -I/tmp/precompiled-workroot/installroot/gems/compiled-gem-0.0.1/lib -rtest_ext/test_ext
+      echo "puts CompiledClass.new.test_method" | ruby -I "/tmp/precompiled-workroot/installroot/extensions/x86_64-darwin-15/2.1.0-static/compiled-gem-0.0.1" -r "test_ext/test_ext"
       """
 
     Then I should see "Hello, world!"
