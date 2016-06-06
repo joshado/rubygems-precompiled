@@ -23,9 +23,11 @@ module Precompiled
     def retrieve(spec)
       raise "Must be overriden!"
     end
+
     def contains?(spec)
       false
     end
+
     def cache_key(spec)
       "/ruby-#{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}/#{Gem::Platform.local.to_s}/#{spec.name}-#{spec.version}.tar.gz"
     end
@@ -35,6 +37,7 @@ module Precompiled
     def path_for(spec)
       File.join(@root_uri.path, cache_key(spec))
     end
+
     def contains?(spec)
       File.exists?(path_for(spec))
     end
@@ -48,11 +51,13 @@ module Precompiled
     def uri_to_spec(spec)
       URI.join(@root_uri, File.join(@root_uri.path, cache_key(spec)))
     end
+
     def contains?(spec)
       uri = uri_to_spec(spec)
       http = Net::HTTP.start(uri.host, uri.port)
       http.head(uri.path).code == "200"
     end
+
     def retrieve(spec)
       tempfile = Tempfile.new('cache-hit')
       uri = uri_to_spec(spec)
@@ -102,7 +107,7 @@ module Precompiled
     end
   end
 
-  # Private: Extracts a .tar.gz file on-top of the gem's installation directory
+  # Private: Extracts a .tar.gz file on-top of the gem's installation directory
   def overlay_tarball(tarball, target_root)
     Zlib::GzipReader.open(tarball) do |gzip_io|
       Gem::Package::TarReader.new(gzip_io) do |tar|

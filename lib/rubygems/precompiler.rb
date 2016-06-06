@@ -34,34 +34,34 @@ class Gem::Precompiler
     end
   end
 
-  # Private: Extracts the gem files into the specified path
+  # Private: Extracts the gem files into the specified path
   #
   def extract_files_into(dir)
     @installer.unpack(dir)
   end
 
-  # Public: Returns the name of the gem
+  # Public: Returns the name of the gem
   #
   # Returns a string
   def gem_name
     @spec.name
   end
 
-  # Public: Returns the version string of the gem
+  # Public: Returns the version string of the gem
   #
-  # Returns a Gem::Version
+  # Returns a Gem::Version
   def gem_version
     @spec.version
   end
 
-  # Public: Returns the relative require-paths specified by the gem
+  # Public: Returns the relative require-paths specified by the gem
   #
   # Returns an array of strings
   def gem_require_paths
     @spec.require_paths
   end
 
-  # Public: Does the gem actually have any compiled extensions?
+  # Public: Does the gem actually have any compiled extensions?
   #
   # Returns boolean - true if the gem has a c-extension that needs building
   def has_extension?
@@ -96,7 +96,7 @@ class Gem::Precompiler
     File.join(*[@target_dir, "#{gem_name}-#{gem_version.to_s}.tar.gz"].compact)
   end
 
-  # Private: Calls the code necessary to build all the extensions
+  # Private: Calls the code necessary to build all the extensions
   # into a specified install root
   #
   # Returns a list of files beneath that root making up the build
@@ -171,7 +171,7 @@ class Gem::Precompiler
     FileUtils.mv(temp_output.path, output_path)
   end
 
-  # Private: Yield a reference to a TarWriter that writes to
+  # Private: Yield a reference to a TarWriter that writes to
   # the specified .tar.gz file
   #
   def targz_file(path, &block)
