@@ -36,8 +36,12 @@ def execute(command)
 end
 
 When /^I (?:run ruby)$/ do |command|
-  extension_path = "/tmp/precompiled-workroot/installroot/extensions/#{Gem::Platform.local}/" \
-    "#{RbConfig::CONFIG["ruby_version"]}-static/compiled-gem-0.0.1"
+  installroot = "/tmp/precompiled-workroot/installroot"
+  extension_path = if Gem::Version.new(Gem::VERSION) < Gem::Version.new("2.0.0")
+    "#{installroot}/gems/compiled-gem-0.0.1/lib"
+  else
+    "#{installroot}/extensions/#{Gem::Platform.local}/#{RbConfig::CONFIG["ruby_version"]}-static/compiled-gem-0.0.1"
+  end
 
   cmd = %{cat <<RUBY | ruby -I "#{extension_path}"
 #{command}
