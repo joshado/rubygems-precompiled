@@ -21,11 +21,12 @@ Given /^I have changed to a temporary directory(?: containing "(.*?)")?$/ do |gl
   FileUtils.chdir(directory)
 end
 After do
+  FileUtils.chdir(OriginalWorkingDirectory)
   cleanup.each { |dir| FileUtils.rm_rf(dir) }
 end
 
 Then /^the folder "(.*?)" should exist$/ do |folder|
-  File.directory?(folder).should be_true
+  expect(File.directory?(folder)).to be true
 end
 
 Then /^the file "(.*?)" should (not )?exist$/ do |file, invert|
