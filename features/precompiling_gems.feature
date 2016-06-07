@@ -28,6 +28,7 @@ Feature: Pre-compiling gems
     And the command should return a success status code
 
   Scenario: Pre-compiling a single compiled gem with --build-config
+    Given this version of rubygems supports build options
     When I run the command "gem precompile --verbose --build-config='--foo --bar' compiled-gem.gem"
 
     Then I should see "build-args --foo --bar"
