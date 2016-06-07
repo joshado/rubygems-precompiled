@@ -35,7 +35,6 @@ module Precompiled
 
 
     def build_extensions_with_cache
-      spec = @package.spec
       cache = Precompiled.precompiled_caches.find { |cache| cache.contains?(spec) }
 
       if cache
