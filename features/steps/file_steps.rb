@@ -36,3 +36,8 @@ Then /^the file "(.*?)" should (not )?exist$/ do |file, invert|
     Dir.glob(file).should_not be_empty
   end
 end
+
+Then /^the extension file "(.*?)" in "(.*?)" should have permissions "(.*?)"$/ do |file, install_root, permissions|
+  fullpath = "#{install_root}/extensions/#{Gem::platforms[1].to_s}/#{Gem::extension_api_version}/#{file}"
+  expect(File.stat(fullpath).mode % 512).to eq permissions.to_i(8)
+end

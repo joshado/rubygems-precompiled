@@ -64,10 +64,12 @@ module Precompiled
               File.open(target_path, "w") do |f|
                 f.write entry.read(1024*1024) until entry.eof?
               end
+
+              File.chmod(entry.header.mode.to_i, target_path)
             end
             entry.close
           end
-         end
+        end
       end
     end
   end
